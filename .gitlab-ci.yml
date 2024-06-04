@@ -1,0 +1,17 @@
+include: https://gitlab-templates.ddbuild.io/compute-delivery/v2/compute-delivery.yml
+
+test:
+  stage: verify
+  tags: [ "arch:amd64" ]
+  image: registry.ddbuild.io/images/mirror/golang:1.22.2
+  variables:
+    GOTOOLCHAIN: "auto"
+  script:
+    - apt update && apt install -y unzip lvm2 xfsprogs thin-provisioning-tools patch
+    - make tools
+    - make lint
+
+build-docker-image:
+  extends: .build-docker-image
+  variables:
+    EXTRA_ARGS: --build-arg="TOPOLVM_VERSION=$CI_COMMIT_TAG"
