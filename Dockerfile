@@ -1,9 +1,12 @@
+ARG BASE_IMAGE
+
 # Build topolvm
-FROM --platform=$BUILDPLATFORM golang:1.22-bullseye AS build-topolvm
+FROM registry.ddbuild.io/images/mirror/golang:1.22 AS build-topolvm
 
 # Get argument
 ARG TOPOLVM_VERSION
 ARG TARGETARCH
+ENV GOTOOLCHAIN auto
 
 COPY . /workdir
 WORKDIR /workdir
@@ -12,15 +15,14 @@ RUN touch pkg/lvmd/proto/*.go
 RUN make build-topolvm TOPOLVM_VERSION=${TOPOLVM_VERSION} GOARCH=${TARGETARCH}
 
 # TopoLVM container
-FROM --platform=$TARGETPLATFORM ubuntu:22.04 as topolvm
+FROM $BASE_IMAGE
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends \
+USER root
+RUN clean-apt install \
         btrfs-progs \
         file \
-        xfsprogs \
-    && rm -rf /var/lib/apt/lists/*
+        xfsprogs
 
 COPY --from=build-topolvm /workdir/build/hypertopolvm /hypertopolvm
 
@@ -31,26 +33,5 @@ RUN ln -s hypertopolvm /lvmd \
 
 COPY --from=build-topolvm /workdir/LICENSE /LICENSE
 
+USER dog
 ENTRYPOINT ["/hypertopolvm"]
-
-# Build sidecars
-FROM --platform=$BUILDPLATFORM build-topolvm as build-sidecars
-
-# Get argument
-ARG TARGETARCH
-
-ENV DEBIAN_FRONTEND=noninteractive
-RUN  apt-get update \
-    && apt-get -y install --no-install-recommends \
-        patch
-
-RUN make csi-sidecars GOARCH=${TARGETARCH}
-
-# TopoLVM container with sidecar
-FROM --platform=$TARGETPLATFORM topolvm as topolvm-with-sidecar
-
-COPY --from=build-sidecars /workdir/build/csi-provisioner /csi-provisioner
-COPY --from=build-sidecars /workdir/build/csi-node-driver-registrar /csi-node-driver-registrar
-COPY --from=build-sidecars /workdir/build/csi-resizer /csi-resizer
-COPY --from=build-sidecars /workdir/build/csi-snapshotter /csi-snapshotter
-COPY --from=build-sidecars /workdir/build/livenessprobe /livenessprobe
