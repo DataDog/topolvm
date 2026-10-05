@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
 )
 
 func validOptions() Options {
@@ -15,6 +17,7 @@ func validOptions() Options {
 		MetricsBindAddress:      ":8082",
 		HealthProbeBindAddress:  ":8083",
 		SyncPeriod:              5 * time.Minute,
+		StartupTaintKey:         capacitytemplate.DefaultStartupTaintKey,
 	}
 }
 
@@ -38,10 +41,16 @@ func TestValidateOptions(t *testing.T) {
 			want:   "health-probe-bind-address",
 		},
 		{name: "sync period", mutate: func(o *Options) { o.SyncPeriod = 0 }, want: "sync-period"},
+		{name: "startup taint", mutate: func(o *Options) { o.StartupTaintKey = "Bad Key" }, want: "startup-taint"},
 	}
 
 	if err := ValidateOptions(validOptions()); err != nil {
 		t.Fatalf("valid options rejected: %v", err)
+	}
+	disabled := validOptions()
+	disabled.StartupTaintKey = ""
+	if err := ValidateOptions(disabled); err != nil {
+		t.Fatalf("empty --startup-taint (disabled) rejected: %v", err)
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

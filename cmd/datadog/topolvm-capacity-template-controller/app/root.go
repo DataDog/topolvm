@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/topolvm/topolvm"
+	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -23,6 +24,7 @@ type Options struct {
 	MetricsBindAddress      string
 	HealthProbeBindAddress  string
 	SyncPeriod              time.Duration
+	StartupTaintKey         string
 	Zap                     zap.Options
 }
 
@@ -63,6 +65,13 @@ func NewCommand() *cobra.Command {
 	fs.StringVar(&opts.MetricsBindAddress, "metrics-bind-address", ":8082", "Address for the metrics endpoint")
 	fs.StringVar(&opts.HealthProbeBindAddress, "health-probe-bind-address", ":8083", "Address for health probes")
 	fs.DurationVar(&opts.SyncPeriod, "sync-period", 5*time.Minute, "Maximum convergence period for capacities")
+	fs.StringVar(
+		&opts.StartupTaintKey,
+		"startup-taint",
+		capacitytemplate.DefaultStartupTaintKey,
+		"Node taint to remove once every configured StorageClass has positive per-node TopoLVM capacity "+
+			"for the Node; empty disables the startup-taint controller",
+	)
 
 	goFlags := flag.NewFlagSet("klog", flag.ContinueOnError)
 	klog.InitFlags(goFlags)
@@ -91,6 +100,11 @@ func ValidateOptions(opts Options) error {
 	}
 	if opts.SyncPeriod <= 0 {
 		return fmt.Errorf("--sync-period must be positive")
+	}
+	if opts.StartupTaintKey != "" {
+		if err := capacitytemplate.ValidateStartupTaintKey(opts.StartupTaintKey); err != nil {
+			return fmt.Errorf("invalid --startup-taint: %w", err)
+		}
 	}
 	return nil
 }
