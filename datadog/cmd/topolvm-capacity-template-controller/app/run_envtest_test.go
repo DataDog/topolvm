@@ -10,8 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/topolvm/topolvm"
-	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
+	"github.com/DataDog/topolvm/datadog/internal/capacitytemplate"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -238,7 +237,7 @@ func realCapacity(storageClass string, bytes int64) *storagev1.CSIStorageCapacit
 		},
 		StorageClassName: storageClass,
 		NodeTopology: &metav1.LabelSelector{MatchLabels: map[string]string{
-			topolvm.GetTopologyNodeKey(): envFreshNode,
+			capacitytemplate.TopologyNodeKey: envFreshNode,
 		}},
 		Capacity: resource.NewQuantity(bytes, resource.BinarySI),
 	}
@@ -248,7 +247,7 @@ func freshNode() *corev1.Node {
 	return &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{Name: envFreshNode, Labels: map[string]string{
 			"kubernetes.io/hostname":                 envFreshNode,
-			topolvm.GetTopologyNodeKey():             envFreshNode,
+			capacitytemplate.TopologyNodeKey:         envFreshNode,
 			capacitytemplate.NodeGroupNamespaceLabel: envNamespace,
 			capacitytemplate.NodeGroupNameLabel:      envNodeGroup,
 		}},

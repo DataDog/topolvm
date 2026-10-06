@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
+	"github.com/DataDog/topolvm/datadog/internal/capacitytemplate"
 )
 
 func validOptions() Options {

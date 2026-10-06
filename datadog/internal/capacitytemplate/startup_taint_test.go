@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/topolvm/topolvm"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -49,7 +48,7 @@ func realCapacity(name, storageClass, nodeName, value string) *storagev1.CSIStor
 		},
 		StorageClassName: storageClass,
 		NodeTopology: &metav1.LabelSelector{MatchLabels: map[string]string{
-			topolvm.GetTopologyNodeKey(): nodeName,
+			TopologyNodeKey: nodeName,
 		}},
 	}
 	if value != "" {
@@ -182,7 +181,7 @@ func TestStartupTaintWaitsForPositiveRealCapacity(t *testing.T) {
 			name: "only a template capacity names the node",
 			objects: func() []client.Object {
 				c := templateCapacity()
-				c.NodeTopology.MatchLabels[topolvm.GetTopologyNodeKey()] = testNodeName
+				c.NodeTopology.MatchLabels[TopologyNodeKey] = testNodeName
 				return []client.Object{c}
 			}(),
 			wantWait: true,

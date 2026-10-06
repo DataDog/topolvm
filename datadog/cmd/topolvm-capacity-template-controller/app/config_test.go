@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
+	"github.com/DataDog/topolvm/datadog/internal/capacitytemplate"
 )
 
 // Validation rules are covered by capacitytemplate.TestConfigValidate; these

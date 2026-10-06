@@ -1,8 +1,28 @@
-# Datadog downstream commands
+# Datadog downstream module
 
-Commands below this directory are Datadog-specific downstream integrations.
-They are not part of upstream-supported TopoLVM functionality and are not
-intended for upstream submission.
+Everything below this directory is a Datadog-specific downstream integration.
+It is not part of upstream-supported TopoLVM functionality and is not intended
+for upstream submission.
+
+This directory is an independent Go module,
+`github.com/DataDog/topolvm/datadog`, with its own `go.mod`, `Makefile`, and
+`.golangci.yml`. It does not import the upstream TopoLVM module, and the
+upstream `./...` build, vet, lint, and test targets do not include it. Only
+`Dockerfile.dd` and `.gitlab-ci.yml` at the repository root reference it.
+
+```bash
+make -C datadog lint   # gofmt, golangci-lint, go vet
+make -C datadog test   # unit + envtest tests (downloads envtest binaries)
+make -C datadog build VERSION=<version> GOARCH=<arch>
+```
+
+Binaries are written to `datadog/build/` and copied into the image by
+`Dockerfile.dd`. Layout:
+
+```text
+cmd/topolvm-capacity-template-controller/   # command entry point and flags
+internal/capacitytemplate/                  # reconcilers and capacity handlers
+```
 
 The capacity-template controller is maintained on the downstream `datadog`
 branch. Its capacity matrix mirrors `GetRemoteLVMCapacity` from the
@@ -37,7 +57,7 @@ Constraints:
 - `handler` defaults to `remote-lvm`. `remote-lvm` is the only implemented
   handler; any other value is rejected at startup. A future `local-lvm`
   handler would be added to the handler registry in
-  `internal/datadog/capacitytemplate/handler.go`.
+  `internal/capacitytemplate/handler.go`.
 - Unknown keys in the file are rejected.
 
 ## Startup taint (avoiding duplicate scale-ups)

@@ -37,6 +37,11 @@ const (
 	NodeGroupNamespaceLabel = "nodegroups.datadoghq.com/namespace"
 	NodeGroupNameLabel      = "nodegroups.datadoghq.com/name"
 
+	// TopologyNodeKey is the topology key TopoLVM puts on real per-node
+	// CSIStorageCapacity objects. It matches topolvm.GetTopologyNodeKey() for
+	// the non-legacy "topolvm.io" plugin name.
+	TopologyNodeKey = "topology.topolvm.io/node"
+
 	topolvmProvisioner   = "topolvm.io"
 	deviceClassParameter = "topolvm.io/device-class"
 )

@@ -6,7 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/topolvm/topolvm"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,7 +55,7 @@ func realCapacityNode(capacity *storagev1.CSIStorageCapacity) string {
 	if capacity.Labels[ManagedByLabel] == ManagedByValue || capacity.NodeTopology == nil {
 		return ""
 	}
-	return capacity.NodeTopology.MatchLabels[topolvm.GetTopologyNodeKey()]
+	return capacity.NodeTopology.MatchLabels[TopologyNodeKey]
 }
 
 func positiveCapacity(capacity *storagev1.CSIStorageCapacity) bool {

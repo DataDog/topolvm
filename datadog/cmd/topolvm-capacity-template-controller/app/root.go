@@ -7,13 +7,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/DataDog/topolvm/datadog/internal/capacitytemplate"
 	"github.com/spf13/cobra"
-	"github.com/topolvm/topolvm"
-	"github.com/topolvm/topolvm/internal/datadog/capacitytemplate"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
+
+// Version is set at build time with -ldflags "-X ...app.Version=<version>".
+var Version = "devel"
 
 // Options contains the command's deliberately narrow static configuration.
 type Options struct {
@@ -34,7 +36,7 @@ func NewCommand() *cobra.Command {
 	opts := Options{}
 	cmd := &cobra.Command{
 		Use:           "topolvm-capacity-template-controller",
-		Version:       topolvm.Version,
+		Version:       Version,
 		Short:         "Publish TopoLVM capacity for Datadog NodeGroup templates",
 		Args:          cobra.NoArgs,
 		SilenceErrors: true,

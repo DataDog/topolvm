@@ -1,0 +1,32 @@
+version: "2"
+run:
+  timeout: 15m
+  allow-parallel-runners: true
+linters:
+  default: none
+  enable:
+    - copyloopvar
+    - dupl
+    - errcheck
+    - goconst
+    - gocyclo
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+  exclusions:
+    rules:
+      - path: "internal/*"
+        linters:
+          - dupl
+          - lll
+formatters:
+  enable:
+    - gofmt
+    - goimports
