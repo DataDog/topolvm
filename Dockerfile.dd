@@ -13,6 +13,8 @@ WORKDIR /workdir
 
 RUN touch pkg/lvmd/proto/*.go
 RUN make build-topolvm TOPOLVM_VERSION=${TOPOLVM_VERSION} GOARCH=${TARGETARCH}
+# Datadog-only binaries live in the independent datadog/ Go module.
+RUN make -C datadog build VERSION=${TOPOLVM_VERSION} GOARCH=${TARGETARCH}
 
 # TopoLVM container
 FROM $BASE_IMAGE
@@ -25,6 +27,7 @@ RUN clean-apt install \
     xfsprogs
 
 COPY --from=build-topolvm /workdir/build/hypertopolvm /hypertopolvm
+COPY --from=build-topolvm /workdir/datadog/build/topolvm-capacity-template-controller /topolvm-capacity-template-controller
 
 RUN ln -s hypertopolvm /lvmd \
     && ln -s hypertopolvm /topolvm-scheduler \

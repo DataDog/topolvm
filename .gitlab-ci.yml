@@ -9,7 +9,18 @@ test:
   script:
     - apt update && apt install -y unzip lvm2 xfsprogs thin-provisioning-tools patch
     - make tools
-    - make lint
+    # The prebuilt golangci-lint is slow on shared runners; the upstream
+    # .golangci.yml 5m timeout is overridden here to keep that file untouched.
+    - make lint GOLANGCI_LINT="$CI_PROJECT_DIR/bin/golangci-lint --timeout=15m"
+
+datadog-test:
+  stage: verify
+  tags: [ "arch:amd64" ]
+  image: registry.ddbuild.io/images/mirror/golang:1.22.2
+  variables:
+    GOTOOLCHAIN: "auto"
+  script:
+    - make -C datadog lint test build
 
 build-docker-image:
   extends: .build-docker-image
